@@ -1,5 +1,4 @@
 {
     "liveshare.notebooks.allowGuestExecuteCells": true,
-    "notebook.outline.showCodeCells": true,
-    "liveshare.featureSet": "insiders"
+    "notebook.outline.showCodeCells": true
 }   

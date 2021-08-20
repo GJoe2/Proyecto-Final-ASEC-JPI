@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #Leemos los resultados
-df6=pd.read_csv('Modelos_analizados.csv',usecols= ['Nmodel','a(m)','b(m)','h(m)','t(m)','Lm(m)','V(kN)','Δmax(‰)','VolConc(m3)'])
+df6=pd.read_csv('Modelos_analizados_v2.csv',usecols= ['#Niveles','Nmodel','a(m)','b(m)','h(m)','t(m)','Lm(m)','V(kN)','Δmax(‰)','VolConc(m3)'])
 #print(df6)
 
 df6.loc[:,'Lm(m)'] = round(df6.loc[:,'Lm(m)'],2)

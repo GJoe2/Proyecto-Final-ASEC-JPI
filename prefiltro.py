@@ -26,7 +26,16 @@ dx, dy, dz = dxy, dxy, 3*m
 
 nxy = 4 #número de grillas en X e Y
 nx, ny = nxy, nxy
-nz = 10
+
+nzmin=5 #cantidad de pisos mínima
+nzmax=10 #cantidad de pisos máxima
+dnz=1 #intervalo de pisos
+nnz=int((nzmax-nzmin)/dnz+1) #número de intervalos para nz (cantidad de pisos)
+Nz=np.zeros(nnz) #lista de nz (cantidad de pisos)
+nzi=nzmin
+for i in range(nnz):
+    Nz[i]=nzi
+    nzi=nzi+dnz
 
 #GEOMETRÍA DE ELEMENTOS ESTRUCTURALES
 lstf=np.empty((0, 5))
@@ -109,7 +118,9 @@ for j in range(nLm):
                     t = tm[jj]
                     Lmx, Lmy = Lm[j] ,Lm[j]
                     h = hv[kk]
-                    
+                    #Para nz = 1
+                    nz = 1
+
                     VolVx = (b*h*dx*(nx*(ny+1)-4))*nz
                     VolVy = (b*h*dy*(ny*(nx+1)-4))*nz
                     VolCol = (a*a*dz*(nx+1)*(ny+1)+8-12)*nz
@@ -127,7 +138,7 @@ for j in range(nLm):
         lst2[i+j*total1]=lst1[i]
 
 
-print(total)
+#print(total)
                 
 for i in range(total):
     #CONDICIONALES
@@ -152,6 +163,6 @@ nlstf=len(lstf)
 
 #print (lstf)
 
-print('Número de modelos a analizar = %.0f'%(nlstf))
+print('Número de modelos a analizar por cantidad de pisos (de 5 a 10 pisos) = %.0f'%(nlstf))
 np.savetxt('lista_filtro.txt',lstf)
                     

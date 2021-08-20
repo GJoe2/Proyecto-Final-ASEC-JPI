@@ -1,3 +1,5 @@
+import numpy as np
+
 acmin=0.25
 acmax=0.80
 dac=0.05
@@ -22,3 +24,4 @@ Lmmax=2.5
 dLm=0.10
 hvmax=0.8
 dhv=0.10
+

@@ -297,7 +297,7 @@ ops.uniaxialMaterial('Elastic', 2, 2*10**6*kgf/cm**2) #Acero
 ops.uniaxialMaterial('Elastic', 3, G) #Concreto Cortante
 
 #Muros en x
-a = 20*cm
+aancho = 20*cm
 mufx = int(round(Lmx/a))
 ttx = np.zeros(mufx)
 ttx[:] = t
@@ -311,7 +311,7 @@ acerox = np.zeros(mufx)
 acerox[:] = int(2)
 
 #Muros en y
-a = 20*cm
+ancho = 20*cm
 mufy = int(round(Lmy/a))
 tty = np.zeros(mufy)
 tty[:] = t
@@ -788,6 +788,11 @@ maxdrifty=vecY.max()
 
 print(maxdriftx)
 print(maxdrifty)
+
+df6 = pd.DataFrame(columns=['Nmodel','a (m)','b (m)','h (m)','t (m)','Lm (m)','V(kN)','Δ max(‰)'])
+df6 = df6.append({'Nmodel':1,'a (m)':a,'b (m)':b,'h (m)':h,'t (m)':t,'Lm (m)':Lmx,'V(kN)':df5.loc[['Vx(kN)',0]],'Δ max(‰)':df5.loc[['Δx(‰)',0]]}, ignore_index=True)
+df6 = df6.astype({'Nmodel':int})
+print(df6.round(4))
 
 #lim = 1.1*max(vecX.max(),vecY.max())
 #

@@ -33,17 +33,8 @@ dx, dy, dz = dxy, dxy, 3*m
 
 nxy = 4 #número de grillas en X e Y
 nx, ny = nxy, nxy
+nz = 10
 
-nzmin=5 #número mínimo de pisos
-nzmax=10 #número máximo de pisos
-dnz=1 #intervalo de pisos
-nnz=int((nzmax-nzmin)/dnz+1) #número de intervalos para nz (número de pisos)
-Nz=np.zeros(nnz) #lista de nz (número de pisos)
-nzi=nzmin
-for i in range(nnz):
-    Nz[i]=nzi
-    nzi=nzi+dnz
-#print(Nz)
 #==================================================================
 #GEOMETRÍA DE ELEMENTOS ESTRUCTURALES
 acmin=0.25*m #ancho mínimo de columna
@@ -81,7 +72,7 @@ for i in range(ntm):
 
 Lmmin=4*tmmin #Longitud mínima de muro
 Lmmax=dxy/2 #longitud máxima de muro
-dLm=0.10*m #intervalo de longitud de muro
+dLm=0.25*m #intervalo de longitud de muro
 nLm=int((Lmmax-Lmmin)/dLm+1) #número de intervalos para Lm (longitud de muro)
 LM=np.zeros(nLm) #lista de Lm (longitud de muro)
 Lmi=Lmmin
@@ -100,6 +91,56 @@ for i in range(nhv):
     hv[i]=hvi
     hvi=hvi+dhv
 #print(hv)
+
+lstf=np.empty((0, 5))
+total=nac*nbv*ntm*nLm*nhv
+#print(total)
+lst1=np.zeros((total,5))
+
+for i in range(0,int(total/nac)):
+    for j in range(0,nac):
+        lst1[j+i*nac,0]=ac[j]
+        
+for i in range(0,int(total/nbv)):
+    for j in range(0,nbv):
+        lst1[j+i*nbv,1]=bv[j]
+
+for i in range(0,int(total/ntm)):
+    for j in range(0,ntm):
+        lst1[j+i*ntm,2]=tm[j]
+        
+for i in range(0,int(total/nLm)):
+    for j in range(0,nLm):
+        lst1[j+i*nLm,3]=LM[j]
+        
+for i in range(0,int(total/nhv)):
+    for j in range(0,nhv):
+        lst1[j+i*nhv,4]=hv[j]
+        
+#print(len(lst1)) 
+
+#CONDICIONALES
+for i in range(0,total):
+    #tm tiene como minimo bv
+    if lst1[i,2] >= lst1[i,1]:
+        #Lm tiene como minimo 4tm
+        if lst1[i,3] >= 4*lst1[i,2]:
+            #hv tiene como minimo 2bv
+            if lst1[i,4] >= 2*lst1[i,1]:
+                
+                b=lst1[i,1]
+                h=lst1[i,4]
+                Izv = b*h**3/12
+                a=lst1[i,0]
+                Izc = a**4/12
+                
+                if Izv <= Izc:
+
+                    lstf=np.append(lstf,[lst1[i]],axis=0)
+
+nlstf=len(lstf)
+#print(nlstf)
+print('Número de modelos a analizar = %.0f'%(nlstf))
 #==================================================================
 #DEFINICIÓN DE FUNCIONES
 def GeoModel(dx, dy, h, nx, ny, nz, Lmx, Lmy):
@@ -109,43 +150,11 @@ def GeoModel(dx, dy, h, nx, ny, nz, Lmx, Lmy):
     Nodes = zeros((NN,5))
     #Calculando fracciones de masas en los nodos
     mnodes = zeros(5)
-    if Lmx <= dx/2 and Lmy <= dy/2:
-        if dx > dy and Lmx<=dx-dy:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = 0.25 - (dy-Lmx)**2/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.50 - Lmx/(4*dx) #nudo lateral en x
-            mnodes[3] = ((dy+Lmy)**2-3*Lmy**2)/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.50 - (2*dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
-        elif dx > dy and Lmx>dx-dy:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = 0.50 - dy/(4*dx) - (dx-Lmx)**2/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.25 + dy/(8*dx) - (dx-Lmx)**2/(8*dx*dy) #nudo lateral en x
-            mnodes[3] = ((dy+Lmy)**2-3*Lmy**2)/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.50 - (2*dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
-
-        elif dx < dy and Lmy<=dy-dx:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = ((dx+Lmx)**2-3*Lmx**2)/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.50 - (2*dx-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
-            mnodes[3] = 0.25 - (dx-Lmy)**2/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.50 - Lmy/(4*dy) #nudo lateral en y
-        elif dx < dy and Lmy>dy-dx:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = ((dx+Lmx)**2-3*Lmx**2)/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.50 - (2*dx-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
-            mnodes[3] = 0.50 - dx/(4*dy) - (dy-Lmy)**2/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.25 + dx/(8*dy) - (dy-Lmy)**2/(8*dx*dy) #nudo lateral en y
-            
-        elif dx == dy:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = 0.25 - (Lmx**2+dy**2-(dx+dy-Lmx)*Lmx)/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.50 - (dx+dy-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
-            mnodes[3] = 0.25 - (Lmy**2+dx**2-(dx+dy-Lmy)*Lmy)/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.50 - (dx+dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
-
-    elif Lmx>dx/2 and Lmy>dy/2:
-        print('Lm es incompatible, Lm= %.2f m es mayor que la mitad de la longitud del vano (dx=%.2f m o dy=%.2f m)'%(Lm/m,dx/m,dy/m))
-
+    mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
+    mnodes[1] = 0.25 - (Lmx**2+dy**2-(dx+dy-Lmx)*Lmx)/(8*dx*dy) #nudo extremo de muro en x
+    mnodes[2] = 0.50 - (dx+dy-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
+    mnodes[3] = 0.25 - (Lmy**2+dx**2-(dx+dy-Lmy)*Lmy)/(8*dx*dy) #nudo extremo de muro en y
+    mnodes[4] = 0.50 - (dx+dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
 
     # Creando los nodos y asignando coordenadas
     c = 0
@@ -438,449 +447,417 @@ G = 0.5*E/(1+0.2)
 #===================================================================
 #ITERACIONES
 contador=0
-for nz in Nz:
-    for a in ac:
-        for b in bv:
-            for h in hv:
-                for t in tm:
-                    for Lm in LM:
-                        print(contador)
-                        nz = int(nz)
-                        # Viga
-                        Av = b*h
-                        Izv = b*h**3/12
-                        Iyv = b**3*h/12
-                        aa, bb = max(b,h),min(b,h)
-                        β= 1/3-0.21*bb/aa*(1-(bb/aa)**4/12)
-                        Jxxv = β*bb**3*aa
-                        # Columna
-                        Ac = a**2
-                        Izc = a**4/12
-                        Iyc = a**4/12
-                        β= 1/3-0.21*1.*(1-(1.)**4/12)
-                        Jxxc = β*a**4
+df6 = pd.DataFrame(columns=['Nmodel','a','b','h','t','Lm','Vx(kN)','Vy(kN)','Δx max(‰)','Δy max(‰)']) #Para guardar los datos
+for nmodel in range(nlstf) :
+    a = lstf[nmodel,0]
+    b = lstf[nmodel,1]
+    t = lstf[nmodel,2]
+    Lm = lstf[nmodel,3]
+    h = lstf[nmodel,4]
 
-                        #CONDICIONALES
-                        if t > b :
-                            continue
-                        elif Lm < 4*t :
-                            continue
-                        elif Izv > Izc :
-                            continue
-                        
-                        #CREACIÓN DEL MODELO
-                        ops.wipe()
-                        ops.model('basic', '-ndm', 3, '-ndf', 6)
-                        RigidDiaphragm = 'ON'
+    print('Modelo N° %.0f:'%(nmodel+1))
+    nz = int(nz)
+    # Viga
+    Av = b*h
+    Izv = b*h**3/12
+    Iyv = b**3*h/12
+    aa, bb = max(b,h),min(b,h)
+    β= 1/3-0.21*bb/aa*(1-(bb/aa)**4/12)
+    Jxxv = β*bb**3*aa
+    # Columna
+    Ac = a**2
+    Izc = a**4/12
+    Iyc = a**4/12
+    β= 1/3-0.21*1.*(1-(1.)**4/12)
+    Jxxc = β*a**4
 
-                        #Muro
-                        Lmx, Lmy = Lm , Lm
-                        ops.uniaxialMaterial('Elastic', 1, E) #Concreto Axial
-                        ops.uniaxialMaterial('Elastic', 2, 2*10**6*kgf/cm**2) #Acero
-                        ops.uniaxialMaterial('Elastic', 3, G) #Concreto Cortante
-                        #Muros en x
-                        ancho = 20*cm
-                        mufx = int(round(Lmx/ancho))
-                        ttx = np.zeros(mufx)
-                        ttx[:] = t
-                        wwx = np.zeros(mufx)
-                        wwx[:] = Lmx/(mufx)
-                        ρρx = np.zeros(mufx)
-                        ρρx[:] = 0 #Cuantía vertical en muros
-                        concx = np.zeros(mufx)
-                        concx[:] = int(1)
-                        acerox = np.zeros(mufx)
-                        acerox[:] = int(2)
-                        #Muros en y
-                        ancho = 20*cm
-                        mufy = int(round(Lmy/ancho))
-                        tty = np.zeros(mufy)
-                        tty[:] = t
-                        wwy = np.zeros(mufy)
-                        wwy[:] = Lmy/(mufy)
-                        ρρy = np.zeros(mufy)
-                        ρρy[:] = 0 #Cuantía vertical en muros
-                        concy = np.zeros(mufy)
-                        concy[:] = int(1)
-                        aceroy = np.zeros(mufy)
-                        aceroy[:] = int(2)
-
-                        # Nodos del Modelo
-                        Nodes, Elems, Diap = GeoModel(dx,dy,dz,nx,ny,nz,Lmx,Lmy)
-
-                        #CREAMOS NODOS DEL MODELO
-                        # Creamos los nodos
-                        for Ni in Nodes:
-                            ops.node(int(Ni[0]), *Ni[1:4])
-
-                        # Definimos diafragmas rígidos
-                        if RigidDiaphragm == 'ON':
-                            dirDia = 3 # perpendicular al plano del diafragma
-                            for Nd in Diap:
-                                ops.node(int(Nd[0]), *Nd[1:4])
-                                ops.fix(int(Nd[0]),*[0,0,1,1,1,0])
-                                NodesDi = []
-                                for Ni in Nodes:
-                                    if Ni[3]==Nd[3]:
-                                        NodesDi.append(int(Ni[0]))
-                                ops.rigidDiaphragm(dirDia,int(Nd[0]),*NodesDi)
-                        
-                        #ASIGNAMOS RESTRICCIONES EN LA BASE
-                        # Restricciones
-                        ops.fixZ(0.0, *[1,1,1,1,1,1], '-tol', 1e-6)
-
-                        #EJES LOCALES
-                        #Establecemos transformación geométrica
-                        ops.geomTransf('PDelta', int(1), *[1, 0, 0])
-                        ops.geomTransf('Linear', int(2), *[1,-1, 0])
-
-                        #DEFINIMOS ELEMENTOS CON SUS PROPIEDADES
-                        # Creamos los elementos
-                        for Ele in Elems:
-                            if int(Ele[5]) == 1: # 1 Columna
-                                ops.element('elasticBeamColumn', int(Ele[0]), int(Ele[1]), int(Ele[2]), Ac, E, G, Jxxc, Iyc, Izc, int(Ele[5]),'-mass', ρ*Ac)
-                            elif int(Ele[5]) == 2: # 2 Viga
-                                ops.element('elasticBeamColumn', int(Ele[0]), int(Ele[1]), int(Ele[2]), Av, E, G, Jxxv, Iyv, Izv, int(Ele[5]),'-mass', ρ*Av)#*(dx-a)/dx)
-                            elif int(Ele[5]) == 3: # 3 Muro en x
-                                ops.element('MVLEM_3D', int(Ele[0]), int(Ele[1]), int(Ele[2]), int(Ele[3]), int(Ele[4]), mufx, '-thick', *ttx[:], '-width', *wwx[:], '-rho', *ρρx[:], '-matConcrete', *concx[:], '-matSteel', *acerox[:], '-matShear', int(3), '-Poisson', 0.2, '-Density', ρ)
-                            elif int(Ele[5]) == 4: # 4 Muro en y
-                                ops.element('MVLEM_3D', int(Ele[0]), int(Ele[1]), int(Ele[2]), int(Ele[3]), int(Ele[4]), mufy, '-thick', *tty[:], '-width', *wwy[:], '-rho', *ρρy[:], '-matConcrete', *concy[:], '-matSteel', *aceroy[:], '-matShear', int(3), '-Poisson', 0.2, '-Density', ρ)
-
-                        #ASIGNACIÓN DE MASAS Y MODOS DE VIBRACIÓN
-                        # Aplicando Cargas vivas y muertas
-                        wLive = 250*kg/m**2
-                        wLosa = 300*kg/m**2
-                        wAcab = 100*kg/m**2
-                        wTabi = 150*kg/m**2
-                        wTotal = 1.0*(wLosa+wAcab+wTabi)+0.25*wLive
-
-                        Carga = wTotal*dx*dy*m**2
-                        for Ni in Nodes:
-                            ops.mass(int(Ni[0]),Ni[4]*Carga,Ni[4]*Carga,0.0)
-
-                        # Obtenemos los modos
-                        Nmodes = 3*nz
-
-                        vals = ops.eigen(Nmodes)
-                        Tmodes = np.zeros(len(vals))
-                        for i in range(Nmodes):
-                            Tmodes[i] = 2*np.pi/vals[i]**0.5
-                            #print("T[%i]: %.5f"%(i+1,Tmodes[i]))
-
-                        #ANÁLISIS PARA OBTENER LA MATRIZ DE MASAS
-                        # Realizamos un análisis para obtener la matriz de Masas
-                        ops.wipeAnalysis()
-                        ops.system('FullGeneral')
-                        ops.numberer("Plain")
-                        ops.constraints('Transformation') 
-                        ops.algorithm('Linear')
-                        ops.analysis('Transient')
-                        ops.integrator('GimmeMCK',1.0,0.0,0.0)
-                        ops.analyze(1,0.0) 
-
-                        # Obtenemos la matriz de Masas
-                        N = ops.systemSize()         # Número de Grados de Libertad
-                        Mmatrix = ops.printA('-ret')
-                        Mmatrix = np.array(Mmatrix).reshape((N,N))
-                        MF = Mmatrix[-3*nz:,-3*nz:]
-
-                        #ANÁLISIS ESTÁTICO
-                        #Análisis Estático en X
-                        np.set_printoptions(precision=3,linewidth=300,suppress=True)
-                        H = np.arange(1,nz+1)*dz
-                        P = sum(MF[0::3,0::3])*9.80665 # Peso por nivel
-                        #print(H,P)
-                        Ro = 7.0
-                        E030 = espectro_E030(Tmodes,Z=0.45,U=1.0,S=1.0,Tp=0.4,Tl=2.5,R=Ro)
-                        F, k = get_static_loads(E030[0],P,H,Tmodes[0])
-                        CR = E030[0]/(0.45*1.*1.)
-                        #print('C/R=',CR)
-                        #print(E030[0],k)
-
-                        #CONDICIONALES
-                        if CR < 0.11 :
-                            print('C/R=',CR)
-                            continue
-
-                        ##Aplicamos fuerzas nodales
-                        ops.timeSeries('Linear',1)
-                        ops.pattern('Plain',1,1)
-                        Le = ny*dy*0.05
-                        for i in range(nz):
-                            #print(int(Diap[i][0]))
-                            ops.load(int(Diap[i][0]),F[i],0.,0.,0.,0.,F[i]*Le)
-                        
-                        #Realizamos el análisis
-                        ops.wipeAnalysis()
-                        ops.constraints('Transformation')
-                        ops.numberer('Plain')
-                        ops.system('FullGeneral')
-                        ops.algorithm('Linear')
-                        ops.integrator('LoadControl',1)
-                        ops.analysis('Static')
-                        ops.analyze(1)
-
-                        #Calculando cortantes
-                        VSx = np.cumsum(F[::-1])[::-1]
-
-                        #Resultados del análisis estático en X
-                        # Desplazamientos
-                        df1 = pd.DataFrame(columns=['Nivel','Vx(kN)','UxMax(cm)','UyMax(cm)','DriftX(‰)','DriftY(‰)'])
-                        tempX, tempY = 0., 0.
-                        for i in range(nz):
-                            desX = ops.nodeDisp(int(Diap[i][0]),1)
-                            desY = ops.nodeDisp(int(Diap[i][0]),2)
-                            rotZ = ops.nodeDisp(int(Diap[i][0]),6)
-                            desX = desX + abs(rotZ*ny*dy/2)
-                            desY = desY + abs(rotZ*nx*dx/2)
-                            desX, desY = desX*0.75*Ro, desY*0.75*Ro
-                            driftX = 1000.*(desX-tempX)/dz
-                            driftY = 1000.*(desY-tempY)/dz 
-                            tempX, tempY = desX, desY
-                            df1 = df1.append({'Nivel':i+1,'Vx(kN)':VSx[i]/1000,'UxMax(cm)':desX*100,'UyMax(cm)':desY*100,
-                                            'DriftX(‰)':driftX,'DriftY(‰)':driftY}, ignore_index=True)
-                        #print('\nANÁLISIS ESTÁTICO EN X')
-                        #print(df1.round(4))
-
-                        ops.reactions()
-                        Vmurox=0
-                        Vcolumx=0
-                        for i in range((nx+1)*(ny+1)+8):
-                            if i == 0 or i == 1 or i == nx+1 or i == nx+2 or i == nx+3 or i == nx+4 or i == ((nx+1)*(ny+1)+8)-1 or i == ((nx+1)*(ny+1)+8)-2 or i == ((nx+1)*(ny+1)+8)-2-nx or i == ((nx+1)*(ny+1)+8)-2-nx-1 or i == ((nx+1)*(ny+1)+8)-2-nx-2 or i == ((nx+1)*(ny+1)+8)-2-nx-3:
-                                Vmurox = Vmurox + ops.nodeReaction(i,1)
-                            else: Vcolumx = Vcolumx + ops.nodeReaction(i,1)
-                        PVmurox = abs(Vmurox)/VSx[0]*100
-                        PVcolumx = abs(Vcolumx)/VSx[0]*100
-
-                        #print('Vmurox = %.4f kN = %.2f%% de VSx'%(abs(Vmurox/kN),PVmurox))
-                        #print('Vcolumx = %.4f kN = %.2f%% de VSx'%(abs(Vcolumx/kN),PVcolumx))
-
-                        #CONDICIONALES
-                        if PVmurox <= 20 or PVmurox >= 80 :
-                            print('PVmurox=',PVmurox)
-                            continue
-
-                        #Análisis Estático en Y
-                        np.set_printoptions(precision=3,linewidth=300,suppress=True)
-                        H = np.arange(1,nz+1)*dz
-                        P = sum(MF[0::3,0::3])*9.80665 # Peso por nivel
-                        #print(H,P)
-                        Ro = 7.0
-                        E030 = espectro_E030(Tmodes,Z=0.45,U=1.0,S=1.0,Tp=0.4,Tl=2.5,R=Ro)
-                        F, k = get_static_loads(E030[0],P,H,Tmodes[0])
-                        CR = E030[0]/(0.45*1.*1.)
-                        #print('C/R=',CR)
-                        #print(E030[0],k)
-
-                        #CONDICIONALES
-                        if CR < 0.11 :
-                            print('C/R=',CR)
-                            continue
-
-                        ##Aplicamos fuerzas nodales
-                        ops.loadConst('-time', 0.0)
-                        ops.remove('timeSeries',1)
-                        ops.remove('loadPattern',1)
-                        ops.timeSeries('Linear',1)
-                        ops.pattern('Plain',1,1)
-                        Le = nx*dx*0.05
-                        for i in range(nz):
-                            #print(int(Diap[i][0]))
-                            ops.load(int(Diap[i][0]),0.,F[i],0.,0.,0.,F[i]*Le)
-
-
-                        #Realizamos el análisis
-                        ops.wipeAnalysis()
-                        ops.constraints('Transformation')
-                        ops.numberer('Plain')
-                        ops.system('FullGeneral')
-                        ops.algorithm('Linear')
-                        ops.integrator('LoadControl',1)
-                        ops.analysis('Static')
-                        ops.analyze(1)
-
-                        #Calculando cortantes
-                        VSy = np.cumsum(F[::-1])[::-1]
-
-                        #Resultados del análisis estático en Y
-                        # Desplazamientos
-                        df2 = pd.DataFrame(columns=['Nivel','Vy(kN)','UxMax(cm)','UyMax(cm)','DriftX(‰)','DriftY(‰)'])
-                        tempX, tempY = 0., 0.
-                        for i in range(nz):
-                            desX = ops.nodeDisp(int(Diap[i][0]),1)
-                            desY = ops.nodeDisp(int(Diap[i][0]),2)
-                            rotZ = ops.nodeDisp(int(Diap[i][0]),6)
-                            desX = desX + abs(rotZ*ny*dy/2)
-                            desY = desY + abs(rotZ*nx*dx/2)
-                            desX, desY = desX*0.75*Ro, desY*0.75*Ro
-                            driftX = 1000.*(desX-tempX)/dz
-                            driftY = 1000.*(desY-tempY)/dz 
-                            tempX, tempY = desX, desY
-                            df2 = df2.append({'Nivel':i+1,'Vy(kN)':VSy[i]/1000,'UxMax(cm)':desX*100,'UyMax(cm)':desY*100,
-                                            'DriftX(‰)':driftX,'DriftY(‰)':driftY}, ignore_index=True)
-                        #print('\nANÁLISIS ESTÁTICO EN Y')
-                        #print(df2.round(4))
-
-                        ops.reactions()
-                        Vmuroy=0
-                        Vcolumy=0
-                        for i in range((nx+1)*(ny+1)+8):
-                            if i == 0 or i == 1 or i == nx+1 or i == nx+2 or i == nx+3 or i == nx+4 or i == ((nx+1)*(ny+1)+8)-1 or i == ((nx+1)*(ny+1)+8)-2 or i == ((nx+1)*(ny+1)+8)-2-nx or i == ((nx+1)*(ny+1)+8)-2-nx-1 or i == ((nx+1)*(ny+1)+8)-2-nx-2 or i == ((nx+1)*(ny+1)+8)-2-nx-3:
-                                Vmuroy = Vmuroy + ops.nodeReaction(i,2)
-                            else: Vcolumy = Vcolumy + ops.nodeReaction(i,2)
-                        PVmuroy = abs(Vmuroy)/VSy[0]*100
-                        PVcolumy = abs(Vcolumy)/VSy[0]*100
-
-                        #print('Vmuroy = %.4f kN = %.2f%% de VSy'%(abs(Vmuroy/kN),PVmuroy))
-                        #print('Vcolumy = %.4f kN = %.2f%% de VSy'%(abs(Vcolumy/kN),PVcolumy))
-
-                        #CONDICIONALES
-                        if PVmuroy <= 20 or PVmuroy >= 80 :
-                            print('PVmuroy=',PVmuroy)
-                            continue
-
-                        #MASAS EFECTIVAS
-                        Tags = ops.getNodeTags()
-                        # print(Tags)
-                        modo = np.zeros((Nmodes,3*nz))
-                        for j in range(1,Nmodes+1):
-                            ind = 0
-                            for i in Tags[-nz:]:
-                                temp = ops.nodeEigenvector(i,j)
-                                modo[j-1,[ind,ind+1,ind+2]] = temp[0],temp[1],temp[-1]
-                                ind = ind + 3
-
-                        # Definimos valores iniciales
-                        Ux,Uy,Rz = np.zeros(3*nz),np.zeros(3*nz),np.zeros(3*nz)
-                        Ux[0::3]=1
-                        Uy[1::3]=1
-                        Rz[2::3]=1
-                        SUMx, SUMy, SUMr = 0., 0., 0.
-                        ni = 0
-
-                        Mx = sum(sum(MF[0::3,0::3]))
-                        My = sum(sum(MF[1::3,1::3]))
-                        Mr = sum(sum(MF[2::3,2::3]))
-
-                        df3 = pd.DataFrame(columns=['Modo','T(s)','FPRx','FPRy','FPRr','SumUx','SumUy','SumRz'])
-                        for j in range(1,Nmodes+1):
-                            FPx = modo[j-1].T@MF@Ux
-                            FPy = modo[j-1].T@MF@Uy
-                            FPr = modo[j-1].T@MF@Rz
-                            FPRx = FPx**2/Mx
-                            FPRy = FPy**2/My
-                            FPRr = FPr**2/Mr
-                            SUMx = SUMx + FPRx
-                            SUMy = SUMy + FPRy
-                            SUMr = SUMr + FPRr
-                            #
-                            if min(SUMx,SUMy,SUMr)>=0.90 and ni==0:
-                                ni = j
-                            df3 = df3.append({'Modo':j, 'T(s)':Tmodes[j-1],'FPRx':FPRx,'FPRy':FPRy,'FPRr':FPRr,'SumUx':SUMx,
-                                            'SumUy':SUMy,'SumRz':SUMr}, ignore_index=True)
-                        #print(df3.round(5))
-                        #print('N° mínimo de Modos a considerar:',ni)
-
-                        #CONDICIONALES
-                        if ni == 0 :
-                            continue
-
-                        DDx, ΔDx, VDx, DDy, ΔDy, VDy, df4 = getCombo(E030,MF,modo,Tmodes,3*nz,ni)
-                        #print('\nANÁLISIS DINÁMICO SIN ESCALAR')
-                        df4 = df4.astype({'Nivel':int})
-                        #print(df4.round(4))
-
-                        # Escalamiento de los resultados del análisis dinámico
-                        if VDx[0::3][0]<0.80*VSx[0]:
-                            FSx  = 0.80*VSx[0]/VDx[0::3][0]
-                            msjx = 'SI es necesario aplicar un Factor de Escala en X: %.4f'%FSx
-                        else:
-                            FSx = 1.
-                            msjx = 'NO es necesario escalar en X'
-
-                        if VDy[1::3][0]<0.80*VSy[0]:
-                            FSy  = 0.80*VSy[0]/VDy[1::3][0]
-                            msjy = 'SI es necesario aplicar un Factor de Escala en Y: %.4f'%FSy
-                        else:
-                            FSy = 1.
-                            msjy = 'NO es necesario escalar en Y'
-
-                        texto1 = '\nAl comparar la cortante basal obtenida en el análisis dinámico en X \n\
-                        (%.2f kN) y el 80%% de la cortante basal del análisis estático en X (%.2f kN), \n\
-                        se obtiene que %s. '%(VDx[0::3][0]/1000,0.80*VSx[0]/1000,msjx)
-                        texto1 = texto1 + '\nEn la dirección Y, la cortante basal obtenida en el análisis \n\
-                        dinámico es %.2f kN y el 80%% de la cortante basal del análisis estático es %.2f kN. \n\
-                        Por lo que %s.'%(VDy[1::3][0]/1000,0.80*VSy[0]/1000,msjy)
-                        #print(texto1)
-
-                        # Se aplican los Factores de Escala
-                        #print('\nANÁLISIS DINÁMICO FINAL')
-                        df5 = pd.DataFrame(columns=['Nivel','Vx(kN)','Vy(kN)','Ux(cm)','Uy(cm)','Δx(‰)','Δy(‰)'])
-                        for i in range(nz):
-                            Δx = 0.75*Ro*ΔDx[0::3][i]/dz
-                            Δy = 0.75*Ro*ΔDy[1::3][i]/dz
-                            #
-                            df5 = df5.append({'Nivel':i+1, 'Vx(kN)':FSx*VDx[0::3][i]/1000,
-                                'Vy(kN)':FSy*VDy[1::3][i]/1000,'Ux(cm)':0.75*Ro*DDx[0::3][i]*100,
-                                'Uy(cm)':0.75*Ro*DDy[1::3][i]*100,'Δx(‰)':Δx*1000,'Δy(‰)':Δy*1000}, ignore_index=True)
-                        df5 = df5.astype({'Nivel':int})
-                        #print(df5.round(4))
-
-                        # Distorsiones máximas
-                        vecX = np.array(df5.loc[:,'Δx(‰)'])
-                        vecY = np.array(df5.loc[:,'Δy(‰)'])
-
-                        maxdriftx = vecX.max()
-                        maxdrifty = vecY.max()
-
-                        #CONDICIONALES
-                        if maxdriftx >= 7 or maxdrifty >= 7 :
-                            continue
-
-                        #GUARDAMOS LOS DATOS
-                        contador = contador + 1
-                        print(contador)
-
-print(contador)
-
-#lstf=np.array([])
-#ite1=nac*nbv
-
-#ac=np.zeros((1,nac))
-#for i in range(0,nac):
-#    ac[0,i]=acmin
-#    acmin=acmin+dac
-
-#bv=np.zeros((1,nbv))
-#for i in range(0,nbv):
-#    bv[0,i]=bvmin
-#    bvmin=bvmin+dbv
+    #CONDICIONALES
+    #if t > b :
+    #    continue
+    #elif Lm < 4*t :
+    #    continue
+    #elif Izv > Izc :
+    #    continue
     
-#    tmmin=bvmin
-#    ntm=int((tmmax-tmmin))
-#    tm=np.zeros((1,ntm))
-    
-#    for i in range(0,ntm):
-#        tm[0,i]=tmmin
-#        tmmin=tmmin+dtm
-        
-#lst1=np.zeros((ite1,2))
+    #CREACIÓN DEL MODELO
+    ops.wipe()
+    ops.model('basic', '-ndm', 3, '-ndf', 6)
+    RigidDiaphragm = 'ON'
 
-# ac=np.zeros((1,nac))
-#for i in range(0,nac):
-    # ac[0,i]=acmin
+    #Muro
+    Lmx, Lmy = Lm , Lm
+    ops.uniaxialMaterial('Elastic', 1, E) #Concreto Axial
+    ops.uniaxialMaterial('Elastic', 2, 2*10**6*kgf/cm**2) #Acero
+    ops.uniaxialMaterial('Elastic', 3, G) #Concreto Cortante
+    #Muros en x
+    ancho = 20*cm
+    mufx = int(round(Lmx/ancho))
+    ttx = np.zeros(mufx)
+    ttx[:] = t
+    wwx = np.zeros(mufx)
+    wwx[:] = Lmx/(mufx)
+    ρρx = np.zeros(mufx)
+    ρρx[:] = 0 #Cuantía vertical en muros
+    concx = np.zeros(mufx)
+    concx[:] = int(1)
+    acerox = np.zeros(mufx)
+    acerox[:] = int(2)
+    #Muros en y
+    ancho = 20*cm
+    mufy = int(round(Lmy/ancho))
+    tty = np.zeros(mufy)
+    tty[:] = t
+    wwy = np.zeros(mufy)
+    wwy[:] = Lmy/(mufy)
+    ρρy = np.zeros(mufy)
+    ρρy[:] = 0 #Cuantía vertical en muros
+    concy = np.zeros(mufy)
+    concy[:] = int(1)
+    aceroy = np.zeros(mufy)
+    aceroy[:] = int(2)
+
+    # Nodos del Modelo
+    Nodes, Elems, Diap = GeoModel(dx,dy,dz,nx,ny,nz,Lmx,Lmy)
+
+    #CREAMOS NODOS DEL MODELO
+    # Creamos los nodos
+    for Ni in Nodes:
+        ops.node(int(Ni[0]), *Ni[1:4])
+
+    # Definimos diafragmas rígidos
+    if RigidDiaphragm == 'ON':
+        dirDia = 3 # perpendicular al plano del diafragma
+        for Nd in Diap:
+            ops.node(int(Nd[0]), *Nd[1:4])
+            ops.fix(int(Nd[0]),*[0,0,1,1,1,0])
+            NodesDi = []
+            for Ni in Nodes:
+                if Ni[3]==Nd[3]:
+                    NodesDi.append(int(Ni[0]))
+            ops.rigidDiaphragm(dirDia,int(Nd[0]),*NodesDi)
     
-    # bv=np.zeros((1,nbv))
-#    for j in range(0,nbv):
-        # bv[0,j]=bvmin
-        # print(bv[0,j])
-        # jump=(i)*(j)
-        # print(bvmin)
-#        lst1[i+j*nac,0]=ac[0,i]
-#        lst1[j+i*nbv,1]=bv[0,j]
-        # bvmin=bvmin+dbv
-        # acmin=acmin+dac
-        
+    #ASIGNAMOS RESTRICCIONES EN LA BASE
+    # Restricciones
+    ops.fixZ(0.0, *[1,1,1,1,1,1], '-tol', 1e-6)
+
+    #EJES LOCALES
+    #Establecemos transformación geométrica
+    ops.geomTransf('PDelta', int(1), *[1, 0, 0])
+    ops.geomTransf('Linear', int(2), *[1,-1, 0])
+
+    #DEFINIMOS ELEMENTOS CON SUS PROPIEDADES
+    # Creamos los elementos
+    for Ele in Elems:
+        if int(Ele[5]) == 1: # 1 Columna
+            ops.element('elasticBeamColumn', int(Ele[0]), int(Ele[1]), int(Ele[2]), Ac, E, G, Jxxc, Iyc, Izc, int(Ele[5]),'-mass', ρ*Ac)
+        elif int(Ele[5]) == 2: # 2 Viga
+            ops.element('elasticBeamColumn', int(Ele[0]), int(Ele[1]), int(Ele[2]), Av, E, G, Jxxv, Iyv, Izv, int(Ele[5]),'-mass', ρ*Av)#*(dx-a)/dx)
+        elif int(Ele[5]) == 3: # 3 Muro en x
+            ops.element('MVLEM_3D', int(Ele[0]), int(Ele[1]), int(Ele[2]), int(Ele[3]), int(Ele[4]), mufx, '-thick', *ttx[:], '-width', *wwx[:], '-rho', *ρρx[:], '-matConcrete', *concx[:], '-matSteel', *acerox[:], '-matShear', int(3), '-Poisson', 0.2, '-Density', ρ)
+        elif int(Ele[5]) == 4: # 4 Muro en y
+            ops.element('MVLEM_3D', int(Ele[0]), int(Ele[1]), int(Ele[2]), int(Ele[3]), int(Ele[4]), mufy, '-thick', *tty[:], '-width', *wwy[:], '-rho', *ρρy[:], '-matConcrete', *concy[:], '-matSteel', *aceroy[:], '-matShear', int(3), '-Poisson', 0.2, '-Density', ρ)
+
+    #ASIGNACIÓN DE MASAS Y MODOS DE VIBRACIÓN
+    # Aplicando Cargas vivas y muertas
+    wLive = 250*kg/m**2
+    wLosa = 300*kg/m**2
+    wAcab = 100*kg/m**2
+    wTabi = 150*kg/m**2
+    wTotal = 1.0*(wLosa+wAcab+wTabi)+0.25*wLive
+
+    Carga = wTotal*dx*dy*m**2
+    for Ni in Nodes:
+        ops.mass(int(Ni[0]),Ni[4]*Carga,Ni[4]*Carga,0.0)
+
+    # Obtenemos los modos
+    Nmodes = 3*nz
+
+    vals = ops.eigen(Nmodes)
+    Tmodes = np.zeros(len(vals))
+    for i in range(Nmodes):
+        Tmodes[i] = 2*np.pi/vals[i]**0.5
+        #print("T[%i]: %.5f"%(i+1,Tmodes[i]))
+
+    #ANÁLISIS PARA OBTENER LA MATRIZ DE MASAS
+    # Realizamos un análisis para obtener la matriz de Masas
+    ops.wipeAnalysis()
+    ops.system('FullGeneral')
+    ops.numberer("Plain")
+    ops.constraints('Transformation') 
+    ops.algorithm('Linear')
+    ops.analysis('Transient')
+    ops.integrator('GimmeMCK',1.0,0.0,0.0)
+    ops.analyze(1,0.0) 
+
+    # Obtenemos la matriz de Masas
+    N = ops.systemSize()         # Número de Grados de Libertad
+    Mmatrix = ops.printA('-ret')
+    Mmatrix = np.array(Mmatrix).reshape((N,N))
+    MF = Mmatrix[-3*nz:,-3*nz:]
+
+    #ANÁLISIS ESTÁTICO
+    #Análisis Estático en X
+    np.set_printoptions(precision=3,linewidth=300,suppress=True)
+    H = np.arange(1,nz+1)*dz
+    P = sum(MF[0::3,0::3])*9.80665 # Peso por nivel
+    #print(H,P)
+    Ro = 7.0
+    E030 = espectro_E030(Tmodes,Z=0.45,U=1.0,S=1.0,Tp=0.4,Tl=2.5,R=Ro)
+    F, k = get_static_loads(E030[0],P,H,Tmodes[0])
+    CR = E030[0]/(0.45*1.*1.)
+    #print('C/R=',CR)
+    #print(E030[0],k)
+
+    #CONDICIONALES
+    if CR < 0.11 :
+        #print('C/R=',CR)
+        continue
+
+    ##Aplicamos fuerzas nodales
+    ops.timeSeries('Linear',1)
+    ops.pattern('Plain',1,1)
+    Le = ny*dy*0.05
+    for i in range(nz):
+        #print(int(Diap[i][0]))
+        ops.load(int(Diap[i][0]),F[i],0.,0.,0.,0.,F[i]*Le)
+    
+    #Realizamos el análisis
+    ops.wipeAnalysis()
+    ops.constraints('Transformation')
+    ops.numberer('Plain')
+    ops.system('FullGeneral')
+    ops.algorithm('Linear')
+    ops.integrator('LoadControl',1)
+    ops.analysis('Static')
+    ops.analyze(1)
+
+    #Calculando cortantes
+    VSx = np.cumsum(F[::-1])[::-1]
+
+    #Resultados del análisis estático en X
+    # Desplazamientos
+    df1 = pd.DataFrame(columns=['Nivel','Vx(kN)','UxMax(cm)','UyMax(cm)','DriftX(‰)','DriftY(‰)'])
+    tempX, tempY = 0., 0.
+    for i in range(nz):
+        desX = ops.nodeDisp(int(Diap[i][0]),1)
+        desY = ops.nodeDisp(int(Diap[i][0]),2)
+        rotZ = ops.nodeDisp(int(Diap[i][0]),6)
+        desX = desX + abs(rotZ*ny*dy/2)
+        desY = desY + abs(rotZ*nx*dx/2)
+        desX, desY = desX*0.75*Ro, desY*0.75*Ro
+        driftX = 1000.*(desX-tempX)/dz
+        driftY = 1000.*(desY-tempY)/dz 
+        tempX, tempY = desX, desY
+        df1 = df1.append({'Nivel':i+1,'Vx(kN)':VSx[i]/1000,'UxMax(cm)':desX*100,'UyMax(cm)':desY*100,
+                        'DriftX(‰)':driftX,'DriftY(‰)':driftY}, ignore_index=True)
+    #print('\nANÁLISIS ESTÁTICO EN X')
+    #print(df1.round(4))
+
+    ops.reactions()
+    Vmurox=0
+    Vcolumx=0
+    for i in range((nx+1)*(ny+1)+8):
+        if i == 0 or i == 1 or i == nx+1 or i == nx+2 or i == nx+3 or i == nx+4 or i == ((nx+1)*(ny+1)+8)-1 or i == ((nx+1)*(ny+1)+8)-2 or i == ((nx+1)*(ny+1)+8)-2-nx or i == ((nx+1)*(ny+1)+8)-2-nx-1 or i == ((nx+1)*(ny+1)+8)-2-nx-2 or i == ((nx+1)*(ny+1)+8)-2-nx-3:
+            Vmurox = Vmurox + ops.nodeReaction(i,1)
+        else: Vcolumx = Vcolumx + ops.nodeReaction(i,1)
+    PVmurox = abs(Vmurox)/VSx[0]*100
+    PVcolumx = abs(Vcolumx)/VSx[0]*100
+
+    #print('Vmurox = %.4f kN = %.2f%% de VSx'%(abs(Vmurox/kN),PVmurox))
+    #print('Vcolumx = %.4f kN = %.2f%% de VSx'%(abs(Vcolumx/kN),PVcolumx))
+
+    #CONDICIONALES
+    if PVmurox <= 20 or PVmurox >= 80 :
+        #print('PVmurox=',PVmurox)
+        continue
+
+    #Análisis Estático en Y
+    np.set_printoptions(precision=3,linewidth=300,suppress=True)
+    H = np.arange(1,nz+1)*dz
+    P = sum(MF[0::3,0::3])*9.80665 # Peso por nivel
+    #print(H,P)
+    Ro = 7.0
+    E030 = espectro_E030(Tmodes,Z=0.45,U=1.0,S=1.0,Tp=0.4,Tl=2.5,R=Ro)
+    F, k = get_static_loads(E030[0],P,H,Tmodes[0])
+    CR = E030[0]/(0.45*1.*1.)
+    #print('C/R=',CR)
+    #print(E030[0],k)
+
+    #CONDICIONALES
+    if CR < 0.11 :
+        #print('C/R=',CR)
+        continue
+
+    ##Aplicamos fuerzas nodales
+    ops.loadConst('-time', 0.0)
+    ops.remove('timeSeries',1)
+    ops.remove('loadPattern',1)
+    ops.timeSeries('Linear',1)
+    ops.pattern('Plain',1,1)
+    Le = nx*dx*0.05
+    for i in range(nz):
+        #print(int(Diap[i][0]))
+        ops.load(int(Diap[i][0]),0.,F[i],0.,0.,0.,F[i]*Le)
+
+
+    #Realizamos el análisis
+    ops.wipeAnalysis()
+    ops.constraints('Transformation')
+    ops.numberer('Plain')
+    ops.system('FullGeneral')
+    ops.algorithm('Linear')
+    ops.integrator('LoadControl',1)
+    ops.analysis('Static')
+    ops.analyze(1)
+
+    #Calculando cortantes
+    VSy = np.cumsum(F[::-1])[::-1]
+
+    #Resultados del análisis estático en Y
+    # Desplazamientos
+    df2 = pd.DataFrame(columns=['Nivel','Vy(kN)','UxMax(cm)','UyMax(cm)','DriftX(‰)','DriftY(‰)'])
+    tempX, tempY = 0., 0.
+    for i in range(nz):
+        desX = ops.nodeDisp(int(Diap[i][0]),1)
+        desY = ops.nodeDisp(int(Diap[i][0]),2)
+        rotZ = ops.nodeDisp(int(Diap[i][0]),6)
+        desX = desX + abs(rotZ*ny*dy/2)
+        desY = desY + abs(rotZ*nx*dx/2)
+        desX, desY = desX*0.75*Ro, desY*0.75*Ro
+        driftX = 1000.*(desX-tempX)/dz
+        driftY = 1000.*(desY-tempY)/dz 
+        tempX, tempY = desX, desY
+        df2 = df2.append({'Nivel':i+1,'Vy(kN)':VSy[i]/1000,'UxMax(cm)':desX*100,'UyMax(cm)':desY*100,
+                        'DriftX(‰)':driftX,'DriftY(‰)':driftY}, ignore_index=True)
+    #print('\nANÁLISIS ESTÁTICO EN Y')
+    #print(df2.round(4))
+
+    ops.reactions()
+    Vmuroy=0
+    Vcolumy=0
+    for i in range((nx+1)*(ny+1)+8):
+        if i == 0 or i == 1 or i == nx+1 or i == nx+2 or i == nx+3 or i == nx+4 or i == ((nx+1)*(ny+1)+8)-1 or i == ((nx+1)*(ny+1)+8)-2 or i == ((nx+1)*(ny+1)+8)-2-nx or i == ((nx+1)*(ny+1)+8)-2-nx-1 or i == ((nx+1)*(ny+1)+8)-2-nx-2 or i == ((nx+1)*(ny+1)+8)-2-nx-3:
+            Vmuroy = Vmuroy + ops.nodeReaction(i,2)
+        else: Vcolumy = Vcolumy + ops.nodeReaction(i,2)
+    PVmuroy = abs(Vmuroy)/VSy[0]*100
+    PVcolumy = abs(Vcolumy)/VSy[0]*100
+
+    #print('Vmuroy = %.4f kN = %.2f%% de VSy'%(abs(Vmuroy/kN),PVmuroy))
+    #print('Vcolumy = %.4f kN = %.2f%% de VSy'%(abs(Vcolumy/kN),PVcolumy))
+
+    #CONDICIONALES
+    if PVmuroy <= 20 or PVmuroy >= 80 :
+        #print('PVmuroy=',PVmuroy)
+        continue
+
+    #MASAS EFECTIVAS
+    Tags = ops.getNodeTags()
+    # print(Tags)
+    modo = np.zeros((Nmodes,3*nz))
+    for j in range(1,Nmodes+1):
+        ind = 0
+        for i in Tags[-nz:]:
+            temp = ops.nodeEigenvector(i,j)
+            modo[j-1,[ind,ind+1,ind+2]] = temp[0],temp[1],temp[-1]
+            ind = ind + 3
+
+    # Definimos valores iniciales
+    Ux,Uy,Rz = np.zeros(3*nz),np.zeros(3*nz),np.zeros(3*nz)
+    Ux[0::3]=1
+    Uy[1::3]=1
+    Rz[2::3]=1
+    SUMx, SUMy, SUMr = 0., 0., 0.
+    ni = 0
+
+    Mx = sum(sum(MF[0::3,0::3]))
+    My = sum(sum(MF[1::3,1::3]))
+    Mr = sum(sum(MF[2::3,2::3]))
+
+    df3 = pd.DataFrame(columns=['Modo','T(s)','FPRx','FPRy','FPRr','SumUx','SumUy','SumRz'])
+    for j in range(1,Nmodes+1):
+        FPx = modo[j-1].T@MF@Ux
+        FPy = modo[j-1].T@MF@Uy
+        FPr = modo[j-1].T@MF@Rz
+        FPRx = FPx**2/Mx
+        FPRy = FPy**2/My
+        FPRr = FPr**2/Mr
+        SUMx = SUMx + FPRx
+        SUMy = SUMy + FPRy
+        SUMr = SUMr + FPRr
+        #
+        if min(SUMx,SUMy,SUMr)>=0.90 and ni==0:
+            ni = j
+        df3 = df3.append({'Modo':j, 'T(s)':Tmodes[j-1],'FPRx':FPRx,'FPRy':FPRy,'FPRr':FPRr,'SumUx':SUMx,
+                        'SumUy':SUMy,'SumRz':SUMr}, ignore_index=True)
+    #print(df3.round(5))
+    #print('N° mínimo de Modos a considerar:',ni)
+
+    #CONDICIONALES
+    if ni == 0 :
+        continue
+
+    DDx, ΔDx, VDx, DDy, ΔDy, VDy, df4 = getCombo(E030,MF,modo,Tmodes,3*nz,ni)
+    #print('\nANÁLISIS DINÁMICO SIN ESCALAR')
+    df4 = df4.astype({'Nivel':int})
+    #print(df4.round(4))
+
+    # Escalamiento de los resultados del análisis dinámico
+    if VDx[0::3][0]<0.80*VSx[0]:
+        FSx  = 0.80*VSx[0]/VDx[0::3][0]
+        msjx = 'SI es necesario aplicar un Factor de Escala en X: %.4f'%FSx
+    else:
+        FSx = 1.
+        msjx = 'NO es necesario escalar en X'
+
+    if VDy[1::3][0]<0.80*VSy[0]:
+        FSy  = 0.80*VSy[0]/VDy[1::3][0]
+        msjy = 'SI es necesario aplicar un Factor de Escala en Y: %.4f'%FSy
+    else:
+        FSy = 1.
+        msjy = 'NO es necesario escalar en Y'
+
+    texto1 = '\nAl comparar la cortante basal obtenida en el análisis dinámico en X \n\
+    (%.2f kN) y el 80%% de la cortante basal del análisis estático en X (%.2f kN), \n\
+    se obtiene que %s. '%(VDx[0::3][0]/1000,0.80*VSx[0]/1000,msjx)
+    texto1 = texto1 + '\nEn la dirección Y, la cortante basal obtenida en el análisis \n\
+    dinámico es %.2f kN y el 80%% de la cortante basal del análisis estático es %.2f kN. \n\
+    Por lo que %s.'%(VDy[1::3][0]/1000,0.80*VSy[0]/1000,msjy)
+    #print(texto1)
+
+    # Se aplican los Factores de Escala
+    #print('\nANÁLISIS DINÁMICO FINAL')
+    df5 = pd.DataFrame(columns=['Nivel','Vx(kN)','Vy(kN)','Ux(cm)','Uy(cm)','Δx(‰)','Δy(‰)'])
+    for i in range(nz):
+        Δx = 0.75*Ro*ΔDx[0::3][i]/dz
+        Δy = 0.75*Ro*ΔDy[1::3][i]/dz
+        #
+        df5 = df5.append({'Nivel':i+1, 'Vx(kN)':FSx*VDx[0::3][i]/1000,
+            'Vy(kN)':FSy*VDy[1::3][i]/1000,'Ux(cm)':0.75*Ro*DDx[0::3][i]*100,
+            'Uy(cm)':0.75*Ro*DDy[1::3][i]*100,'Δx(‰)':Δx*1000,'Δy(‰)':Δy*1000}, ignore_index=True)
+    df5 = df5.astype({'Nivel':int})
+    #print(df5.round(4))
+
+    # Distorsiones máximas
+    vecX = np.array(df5.loc[:,'Δx(‰)'])
+    vecY = np.array(df5.loc[:,'Δy(‰)'])
+
+    maxdriftx = vecX.max()
+    maxdrifty = vecY.max()
+
+    #CONDICIONALES
+    if maxdriftx >= 7 or maxdrifty >= 7 :
+        continue
+
+    #GUARDAMOS LOS DATOS
+    print('OK')
+    contador = contador + 1
+    df6 = pd.DataFrame(columns=['Nmodel','a (m)','b (m)','h (m)','t (m)','Lm (m)','V(kN)','Δ max(‰)'])
+    df6 = df6.append({'Nmodel':contador,'a (m)':a,'b (m)':b,'h (m)':h,'t (m)':t,'Lm (m)':Lm,'V(kN)':df5([0,'Vx(kN)']),'Δ max(‰)':df5([0,'Δx(‰)'])}, ignore_index=True)
+
+
+print('Número de Modelos correcto %.0f:'%(contador))
+
+
 
 
 

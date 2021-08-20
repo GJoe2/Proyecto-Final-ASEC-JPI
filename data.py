@@ -42,14 +42,15 @@ lst1=np.zeros((ite1,2))
 ac=np.zeros((1,nac))
 for i in range(0,nac):
     ac[0,i]=acmin
-    acmin=acmin+dac
-
+    
     bv=np.zeros((1,nbv))
     for i in range(0,nbv):
         bv[0,i]=bvmin
-        bvmin=bvmin+dbv
         
-        ite1=
+        ite1[i,j]=[]
+        
+        bvmin=bvmin+dbv
+        acmin=acmin+dac
         
 
 

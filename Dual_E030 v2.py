@@ -859,9 +859,9 @@ for nmodel in range(nlstf) :
     VolMurosy = t*Lmy*dz*4*nz
     Volumen = VolVx+VolVy+VolCol+VolMurosx+VolMurosy
     
-    df6 = df6.append({'Nmodel':1,'a(m)':a,'b(m)':b,'h(m)':h,'t(m)':t,'Lm(m)':Lmx,'V(kN)':df5['Vx(kN)'][0],'Δmax(‰)': maxdriftx,'VolConc(m3)':Volumen}, ignore_index=True)
+    df6 = df6.append({'Nmodel':nmodel+1,'a(m)':a,'b(m)':b,'h(m)':h,'t(m)':t,'Lm(m)':Lmx,'V(kN)':df5['Vx(kN)'][0],'Δmax(‰)': maxdriftx,'VolConc(m3)':Volumen}, ignore_index=True)
     
-print('Número de Modelos correcto %.0f:'%(contador))
+print('Número de Modelos correctos %.0f:'%(contador))
 df6 = df6.astype({'Nmodel':int})
 print(df6.round(4))
 df6.to_csv('Modelos_analizados.csv')

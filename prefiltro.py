@@ -1,6 +1,33 @@
 import numpy as np
+#=================================================================
+#SISTEMA DE UNIDADES
+# Unidades Base
+m = 1
+kg = 1
+s = 1
+# Otras Unidades
+cm = 0.01*m
+N = kg*m/s**2
+kN = 1000*N
+kgf = 9.81*N
+Pa = N/m**2
+MPa = 10**6*Pa
+inch = 2.54*cm
+ft = 12*inch
+ksi = 6894757.2932*Pa
+kip = ksi*inch**2
+psi = 6894.76*Pa
+# Constantes Físicas
+g = 9.81*m/s**2
+#=================================================================
+#GEOMETRÍA DE ESTRUCTURA
+dxy = 5*m #separación de las grillas en X e Y
+dx, dy, dz = dxy, dxy, 3*m
 
-dxy=5
+nxy = 4 #número de grillas en X e Y
+nx, ny = nxy, nxy
+nz = 10
+
 #GEOMETRÍA DE ELEMENTOS ESTRUCTURALES
 lstf=np.empty((0, 5))
 
@@ -61,63 +88,70 @@ for i in range(nhv):
      
 
     
-lstf=np.empty((0, 5))
+lstf=np.empty((0, 6))
+
 total=nac*nbv*ntm*nLm*nhv
 # print(total)
-lst1=np.zeros((total,5))
+total1=int(total/nLm)
+#print(total1)
+lst1=np.zeros((total1,6))
 
-#for i in range(0,int(total/nac)):
-#    for j in range(0,nac):
-#        lst1[j+i*nac,0]=ac[j]
-        
-#for i in range(0,int(total/nbv)):
-#    for j in range(0,nbv):
-#        lst1[j+i*nbv,1]=bv[j]
+lst2=np.zeros((total,6))
 
-#for i in range(0,int(total/ntm)):
-#    for j in range(0,ntm):
-#        lst1[j+i*ntm,2]=tm[j]
-        
-#for i in range(0,int(total/nLm)):
-#    for j in range(0,nLm):
-#        lst1[j+i*nLm,3]=Lm[j]
-        
-#for i in range(0,int(total/nhv)):
-#    for j in range(0,nhv):
-#        lst1[j+i*nhv,4]=hv[j]
-################
 cont=0
 for j in range(nLm):
     for k in range(nac):
         for ii in range(nbv):
             for jj in range(ntm):
                 for kk in range(nhv):
-                    lst1[cont]=[Lm[j],ac[k],bv[ii],tm[jj],hv[kk]]
+                    a = ac[k]
+                    b = bv[ii]
+                    t = tm[jj]
+                    Lmx, Lmy = Lm[j] ,Lm[j]
+                    h = hv[kk]
+                    
+                    VolVx = (b*h*dx*(nx*(ny+1)-4))*nz
+                    VolVy = (b*h*dy*(ny*(nx+1)-4))*nz
+                    VolCol = (a*a*dz*(nx+1)*(ny+1)+8-12)*nz
+                    VolMurosx = t*Lmx*dz*4*nz
+                    VolMurosy = t*Lmy*dz*4*nz
+                    Volumen = round(VolVx+VolVy+VolCol+VolMurosx+VolMurosy,2)
+
+                    lst1[cont]=[a,b,t,Lmx,h,Volumen]
                     cont=cont+1
+    lst1[lst1[:, 5].argsort()]
+    #print(lst1)
+    #print(cont)
+    cont=0
+    for i in range(total1):
+        lst2[i+j*total1]=lst1[i]
+
+
 print(total)
-print(cont)                    
+                
 for i in range(total):
     #CONDICIONALES
     #tm tiene como minimo bv
-    if lst1[i,3] >= lst1[i,2]:
+    if lst2[i,2] >= lst2[i,1]:
         #Lm tiene como minimo 4tm
-        if lst1[i,0] >= 4*lst1[i,3]:
+        if lst2[i,3] >= 4*lst2[i,2]:
             #hv tiene como minimo 2bv
-            if lst1[i,4] >= 2*lst1[i,2]:
+            if lst2[i,4] >= 2*lst2[i,1]:
                 
-                b=lst1[i,2]
-                h=lst1[i,4]
+                b=lst2[i,1]
+                h=lst2[i,4]
                 Izv = b*h**3/12
-                a=lst1[i,1]
+                a=lst2[i,0]
                 Izc = a**4/12
                 
                 if Izv <= Izc:
                     
-                    lstf=np.append(lstf,[lst1[i]],axis=0)
+                    lstf=np.append(lstf,[lst2[i]],axis=0)
 
-print(lstf)
 nlstf=len(lstf)
-#print(nlstf)
+
+#print (lstf)
+
 print('Número de modelos a analizar = %.0f'%(nlstf))
 np.savetxt('lista_filtro.txt',lstf)
                     

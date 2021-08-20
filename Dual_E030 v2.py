@@ -92,43 +92,65 @@ for i in range(nhv):
     hvi=hvi+dhv
 #print(hv)
 
-lstf=np.empty((0, 5))
+lstf=np.empty((0, 6))
+
 total=nac*nbv*ntm*nLm*nhv
-#print(total)
-lst1=np.zeros((total,5))
+# print(total)
+total1=int(total/nLm)
+#print(total1)
+lst1=np.zeros((total1,6))
+
+lst2=np.zeros((total,6))
 
 cont=0
-for j in range(nac):
-    for k in range(nbv):
-        for ii in range(ntm):
-            for jj in range(nLm):
+for j in range(nLm):
+    for k in range(nac):
+        for ii in range(nbv):
+            for jj in range(ntm):
                 for kk in range(nhv):
-                    lst1[cont]=[ac[j],bv[k],tm[ii],LM[jj],hv[kk]]
+                    a = ac[k]
+                    b = bv[ii]
+                    t = tm[jj]
+                    Lmx, Lmy = LM[j] ,LM[j]
+                    h = hv[kk]
+                    
+                    VolVx = (b*h*dx*(nx*(ny+1)-4))*nz
+                    VolVy = (b*h*dy*(ny*(nx+1)-4))*nz
+                    VolCol = (a*a*dz*(nx+1)*(ny+1)+8-12)*nz
+                    VolMurosx = t*Lmx*dz*4*nz
+                    VolMurosy = t*Lmy*dz*4*nz
+                    Volumen = round(VolVx+VolVy+VolCol+VolMurosx+VolMurosy,2)
+
+                    lst1[cont]=[a,b,t,Lmx,h,Volumen]
                     cont=cont+1
-#print(total)
-#print(cont)                    
+    lst1[lst1[:, 5].argsort()]
+    #print(lst1)
+    #print(cont)
+    cont=0
+    for i in range(total1):
+        lst2[i+j*total1]=lst1[i]
+                
 for i in range(total):
     #CONDICIONALES
     #tm tiene como minimo bv
-    if lst1[i,2] >= lst1[i,1]:
+    if lst2[i,2] >= lst2[i,1]:
         #Lm tiene como minimo 4tm
-        if lst1[i,3] >= 4*lst1[i,2]:
+        if lst2[i,3] >= 4*lst2[i,2]:
             #hv tiene como minimo 2bv
-            if lst1[i,4] >= 2*lst1[i,1]:
+            if lst2[i,4] >= 2*lst2[i,1]:
                 
-                b=lst1[i,1]
-                h=lst1[i,4]
+                b=lst2[i,1]
+                h=lst2[i,4]
                 Izv = b*h**3/12
-                a=lst1[i,0]
+                a=lst2[i,0]
                 Izc = a**4/12
                 
                 if Izv <= Izc:
                     
-                    lstf=np.append(lstf,[lst1[i]],axis=0)
+                    lstf=np.append(lstf,[lst2[i]],axis=0)
 
-#print(lstf)
 nlstf=len(lstf)
-#print(nlstf)
+
 print('Número de modelos a analizar = %.0f'%(nlstf))
 np.savetxt('lista_filtro.txt',lstf)
 #==================================================================
@@ -438,14 +460,22 @@ G = 0.5*E/(1+0.2)
 #ITERACIONES
 contador=0
 df6 = pd.DataFrame(columns=['Nmodel','a(m)','b(m)','h(m)','t(m)','Lm(m)','V(kN)','Δmax(‰)','VolConc(m3)']) #Para guardar los datos
+Lmopt = 0
 for nmodel in range(nlstf) :
     a = lstf[nmodel,0]
     b = lstf[nmodel,1]
     t = lstf[nmodel,2]
     Lm = lstf[nmodel,3]
     h = lstf[nmodel,4]
+    Volumen = lstf[nmodel,5]
 
     print('Modelo N° %.0f:'%(nmodel+1))
+
+    #CONDICIONAL PARA PASAR AL SIGUIENTE LM DEBES DE ENCONTRAR EL MODELO ÓPTIMO PARA UN LM
+    if Lm == Lmopt :
+        continue
+
+
     nz = int(nz)
     # Viga
     Av = b*h
@@ -840,23 +870,19 @@ for nmodel in range(nlstf) :
     if maxdriftx >= 7 or maxdrifty >= 7 :
         continue
 
+    #Se guarda el Lm del modelo óptimo
+    Lmopt = Lm
+
     #GUARDAMOS LOS DATOS
     print('OK')
     contador = contador + 1
-
-    VolVx = (b*h*dx*(nx*(ny+1)-4))*nz
-    VolVy = (b*h*dy*(ny*(nx+1)-4))*nz
-    VolCol = (a*a*dz*(nx+1)*(ny+1)+8-12)*nz
-    VolMurosx = t*Lmx*dz*4*nz
-    VolMurosy = t*Lmy*dz*4*nz
-    Volumen = VolVx+VolVy+VolCol+VolMurosx+VolMurosy
     
     df6 = df6.append({'Nmodel':nmodel+1,'a(m)':a,'b(m)':b,'h(m)':h,'t(m)':t,'Lm(m)':Lmx,'V(kN)':df5['Vx(kN)'][0],'Δmax(‰)': maxdriftx,'VolConc(m3)':Volumen}, ignore_index=True)
     
 print('Número de Modelos correctos %.0f:'%(contador))
 df6 = df6.astype({'Nmodel':int})
 print(df6.round(4))
-df6.to_csv('Modelos_analizados.csv')
+#df6.to_csv('Modelos_analizados.csv')
 
 
 

@@ -67,6 +67,6 @@ plt.xlabel('Δmax(‰)')
 plt.ylabel('VolConc(m3)')
 plt.axis([limx,liMx,limy,liMy])
 plt.yticks(np.arange(limy, liMy, (liMy-limy)/10))
-plt.show()
-#plt.savefig('./drift_volu.png')
+#plt.show()
+plt.savefig('./drift_volu.png')
 

@@ -297,8 +297,8 @@ ops.uniaxialMaterial('Elastic', 2, 2*10**6*kgf/cm**2) #Acero
 ops.uniaxialMaterial('Elastic', 3, G) #Concreto Cortante
 
 #Muros en x
-aancho = 20*cm
-mufx = int(round(Lmx/a))
+ancho = 20*cm
+mufx = int(round(Lmx/ancho))
 ttx = np.zeros(mufx)
 ttx[:] = t
 wwx = np.zeros(mufx)
@@ -312,7 +312,7 @@ acerox[:] = int(2)
 
 #Muros en y
 ancho = 20*cm
-mufy = int(round(Lmy/a))
+mufy = int(round(Lmy/ancho))
 tty = np.zeros(mufy)
 tty[:] = t
 wwy = np.zeros(mufy)
@@ -399,7 +399,7 @@ vals = ops.eigen(Nmodes)
 Tmodes = np.zeros(len(vals))
 for i in range(Nmodes):
     Tmodes[i] = 2*np.pi/vals[i]**0.5
-    print("T[%i]: %.5f"%(i+1,Tmodes[i]))
+    #print("T[%i]: %.5f"%(i+1,Tmodes[i]))
 
 #ANÁLISIS PARA OBTENER LA MATRIZ DE MASAS
 # Realizamos un análisis para obtener la matriz de Masas
@@ -418,7 +418,7 @@ Mmatrix = ops.printA('-ret')
 Mmatrix = np.array(Mmatrix).reshape((N,N))
 MF = Mmatrix[-3*nz:,-3*nz:]
 
-
+#print(MF)
 
 #plt.show()
 
@@ -473,8 +473,8 @@ Ro = 7.0
 E030 = espectro_E030(Tmodes,Z=0.45,U=1.0,S=1.0,Tp=0.4,Tl=2.5,R=Ro)
 F, k = get_static_loads(E030[0],P,H,Tmodes[0])
 CR = E030[0]/(0.45*1.*1.)
-print('C/R=',CR)
-print(E030[0],k)
+#print('C/R=',CR)
+#print(E030[0],k)
 
 
 #opsplt.createODB('Dual','Sismo')
@@ -518,8 +518,8 @@ for i in range(nz):
     tempX, tempY = desX, desY
     df1 = df1.append({'Nivel':i+1,'Vx(kN)':VSx[i]/1000,'UxMax(cm)':desX*100,'UyMax(cm)':desY*100,
                     'DriftX(‰)':driftX,'DriftY(‰)':driftY}, ignore_index=True)
-print('\nANÁLISIS ESTÁTICO EN X')
-print(df1.round(4))
+#print('\nANÁLISIS ESTÁTICO EN X')
+#print(df1.round(4))
 
 ops.reactions()
 Vmurox=0
@@ -531,8 +531,8 @@ for i in range((nx+1)*(ny+1)+8):
 PVmurox = abs(Vmurox)/VSx[0]*100
 PVcolumx = abs(Vcolumx)/VSx[0]*100
 
-print('Vmurox = %.4f kN = %.2f%% de VSx'%(abs(Vmurox/kN),PVmurox))
-print('Vcolumx = %.4f kN = %.2f%% de VSx'%(abs(Vcolumx/kN),PVcolumx))
+#print('Vmurox = %.4f kN = %.2f%% de VSx'%(abs(Vmurox/kN),PVmurox))
+#print('Vcolumx = %.4f kN = %.2f%% de VSx'%(abs(Vcolumx/kN),PVcolumx))
 
 
 #Se plotea la deformación obtenida
@@ -559,8 +559,8 @@ Ro = 7.0
 E030 = espectro_E030(Tmodes,Z=0.45,U=1.0,S=1.0,Tp=0.4,Tl=2.5,R=Ro)
 F, k = get_static_loads(E030[0],P,H,Tmodes[0])
 CR = E030[0]/(0.45*1.*1.)
-print('C/R=',CR)
-print(E030[0],k)
+#print('C/R=',CR)
+#print(E030[0],k)
 
 #opsplt.createODB('Dual 10-1','Sismo_Y',Nmodes=ni)
 
@@ -605,8 +605,8 @@ for i in range(nz):
     tempX, tempY = desX, desY
     df2 = df2.append({'Nivel':i+1,'Vy(kN)':VSy[i]/1000,'UxMax(cm)':desX*100,'UyMax(cm)':desY*100,
                     'DriftX(‰)':driftX,'DriftY(‰)':driftY}, ignore_index=True)
-print('\nANÁLISIS ESTÁTICO EN Y')
-print(df2.round(4))
+#print('\nANÁLISIS ESTÁTICO EN Y')
+#print(df2.round(4))
 
 ops.reactions()
 Vmuroy=0
@@ -618,8 +618,8 @@ for i in range((nx+1)*(ny+1)+8):
 PVmuroy = abs(Vmuroy)/VSy[0]*100
 PVcolumy = abs(Vcolumy)/VSy[0]*100
 
-print('Vmuroy = %.4f kN = %.2f%% de VSy'%(abs(Vmuroy/kN),PVmuroy))
-print('Vcolumy = %.4f kN = %.2f%% de VSy'%(abs(Vcolumy/kN),PVcolumy))
+#print('Vmuroy = %.4f kN = %.2f%% de VSy'%(abs(Vmuroy/kN),PVmuroy))
+#print('Vcolumy = %.4f kN = %.2f%% de VSy'%(abs(Vcolumy/kN),PVcolumy))
 
 #Se plotea la deformación obtenida
 
@@ -663,8 +663,8 @@ for j in range(1,Nmodes+1):
         ni = j
     df3 = df3.append({'Modo':j, 'T(s)':Tmodes[j-1],'FPRx':FPRx,'FPRy':FPRy,'FPRr':FPRr,'SumUx':SUMx,
                     'SumUy':SUMy,'SumRz':SUMr}, ignore_index=True)
-print(df3.round(5))
-print('N° mínimo de Modos a considerar:',ni)
+#print(df3.round(5))
+#print('N° mínimo de Modos a considerar:',ni)
 
 
 #ANÁLISIS DINÁMICO MODAL ESPECTRAL
@@ -763,7 +763,7 @@ se obtiene que %s. '%(VDx[0::3][0]/1000,0.80*VSx[0]/1000,msjx)
 texto1 = texto1 + '\nEn la dirección Y, la cortante basal obtenida en el análisis \n\
 dinámico es %.2f kN y el 80%% de la cortante basal del análisis estático es %.2f kN. \n\
 Por lo que %s.'%(VDy[1::3][0]/1000,0.80*VSy[0]/1000,msjy)
-print(texto1)
+#print(texto1)
 
 # Se aplican los Factores de Escala
 print('\nANÁLISIS DINÁMICO FINAL')
@@ -776,7 +776,7 @@ for i in range(nz):
         'Vy(kN)':FSy*VDy[1::3][i]/1000,'Ux(cm)':0.75*Ro*DDx[0::3][i]*100,
         'Uy(cm)':0.75*Ro*DDy[1::3][i]*100,'Δx(‰)':Δx*1000,'Δy(‰)':Δy*1000}, ignore_index=True)
 df5 = df5.astype({'Nivel':int})
-print(df5.round(4))
+#print(df5.round(4))
 
 
 # Ploteamos las Distorsiones

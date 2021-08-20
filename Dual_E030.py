@@ -34,7 +34,7 @@ fc = 210*kgf/cm**2
 E = 15100*(fc/(kgf/cm**2))**0.5*kgf/cm**2
 G = 0.5*E/(1+0.2)
 # Viga
-b,h = 25*cm, 60*cm
+b,h = 25*cm, 55*cm
 Av = b*h
 Izv = b*h**3/12
 Iyv = b**3*h/12

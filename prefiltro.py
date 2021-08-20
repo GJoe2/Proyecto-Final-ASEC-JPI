@@ -66,29 +66,38 @@ total=nac*nbv*ntm*nLm*nhv
 # print(total)
 lst1=np.zeros((total,5))
 
-for i in range(0,int(total/nac)):
-    for j in range(0,nac):
-        lst1[j+i*nac,0]=ac[j]
+#for i in range(0,int(total/nac)):
+#    for j in range(0,nac):
+#        lst1[j+i*nac,0]=ac[j]
         
-for i in range(0,int(total/nbv)):
-    for j in range(0,nbv):
-        lst1[j+i*nbv,1]=bv[j]
+#for i in range(0,int(total/nbv)):
+#    for j in range(0,nbv):
+#        lst1[j+i*nbv,1]=bv[j]
 
-for i in range(0,int(total/ntm)):
-    for j in range(0,ntm):
-        lst1[j+i*ntm,2]=tm[j]
+#for i in range(0,int(total/ntm)):
+#    for j in range(0,ntm):
+#        lst1[j+i*ntm,2]=tm[j]
         
-for i in range(0,int(total/nLm)):
-    for j in range(0,nLm):
-        lst1[j+i*nLm,3]=Lm[j]
+#for i in range(0,int(total/nLm)):
+#    for j in range(0,nLm):
+#        lst1[j+i*nLm,3]=Lm[j]
         
-for i in range(0,int(total/nhv)):
-    for j in range(0,nhv):
-        lst1[j+i*nhv,4]=hv[j]
-        
-    
-#CONDICIONALES
-for i in range(0,total):
+#for i in range(0,int(total/nhv)):
+#    for j in range(0,nhv):
+#        lst1[j+i*nhv,4]=hv[j]
+################
+cont=0
+for j in range(nac):
+    for k in range(nbv):
+        for ii in range(ntm):
+            for jj in range(nLm):
+                for kk in range(nhv):
+                    lst1[cont]=[ac[j],bv[k],tm[ii],Lm[jj],hv[kk]]
+                    cont=cont+1
+print(total)
+print(cont)                    
+for i in range(total):
+    #CONDICIONALES
     #tm tiene como minimo bv
     if lst1[i,2] >= lst1[i,1]:
         #Lm tiene como minimo 4tm
@@ -105,14 +114,10 @@ for i in range(0,total):
                 if Izv <= Izc:
                     
                     lstf=np.append(lstf,[lst1[i]],axis=0)
+
+print(lstf)
+nlstf=len(lstf)
+#print(nlstf)
+print('Número de modelos a analizar = %.0f'%(nlstf))
+np.savetxt('lista_filtro.txt',lstf)
                     
-                
-
-        
-        
-
-
-
-
-
-

@@ -34,7 +34,7 @@ fc = 210*kgf/cm**2
 E = 15100*(fc/(kgf/cm**2))**0.5*kgf/cm**2
 G = 0.5*E/(1+0.2)
 # Viga
-b,h = 25*cm, 50*cm
+b,h = 25*cm, 60*cm
 Av = b*h
 Izv = b*h**3/12
 Iyv = b**3*h/12
@@ -42,7 +42,7 @@ aa, bb = max(b,h),min(b,h)
 β= 1/3-0.21*bb/aa*(1-(bb/aa)**4/12)
 Jxxv = β*bb**3*aa
 # Columna
-a = 60*cm
+a = 50*cm
 Ac = a**2
 Izc = a**4/12
 Iyc = a**4/12
@@ -62,43 +62,43 @@ def GeoModel(dx, dy, h, nx, ny, nz, Lmx, Lmy):
     Nodes = zeros((NN,5))
     #Calculando fracciones de masas en los nodos
     mnodes = zeros(5)
-    if Lmx<=dx/2 and Lmy<=dy/2:
-        if dx > dy and Lmx<=dx-dy:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = 0.25 - (dy-Lmx)**2/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.50 - Lmx/(4*dx) #nudo lateral en x
-            mnodes[3] = ((dy+Lmy)**2-3*Lmy**2)/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.50 - (2*dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
-        elif dx > dy and Lmx>dx-dy:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = 0.50 - dy/(4*dx) - (dx-Lmx)**2/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.25 + dy/(8*dx) - (dx-Lmx)**2/(8*dx*dy) #nudo lateral en x
-            mnodes[3] = ((dy+Lmy)**2-3*Lmy**2)/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.50 - (2*dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
+    #if Lmx<=dx/2 and Lmy<=dy/2:
+        #if dx > dy and Lmx<=dx-dy:
+        #    mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
+        #    mnodes[1] = 0.25 - (dy-Lmx)**2/(8*dx*dy) #nudo extremo de muro en x
+        #    mnodes[2] = 0.50 - Lmx/(4*dx) #nudo lateral en x
+        #    mnodes[3] = ((dy+Lmy)**2-3*Lmy**2)/(8*dx*dy) #nudo extremo de muro en y
+        #    mnodes[4] = 0.50 - (2*dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
+        #elif dx > dy and Lmx>dx-dy:
+        #    mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
+        #    mnodes[1] = 0.50 - dy/(4*dx) - (dx-Lmx)**2/(8*dx*dy) #nudo extremo de muro en x
+        #    mnodes[2] = 0.25 + dy/(8*dx) - (dx-Lmx)**2/(8*dx*dy) #nudo lateral en x
+        #    mnodes[3] = ((dy+Lmy)**2-3*Lmy**2)/(8*dx*dy) #nudo extremo de muro en y
+        #    mnodes[4] = 0.50 - (2*dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
 
-        elif dx < dy and Lmy<=dy-dx:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = ((dx+Lmx)**2-3*Lmx**2)/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.50 - (2*dx-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
-            mnodes[3] = 0.25 - (dx-Lmy)**2/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.50 - Lmy/(4*dy) #nudo lateral en y
-        elif dx < dy and Lmy>dy-dx:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = ((dx+Lmx)**2-3*Lmx**2)/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.50 - (2*dx-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
-            mnodes[3] = 0.50 - dx/(4*dy) - (dy-Lmy)**2/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.25 + dx/(8*dy) - (dy-Lmy)**2/(8*dx*dy) #nudo lateral en y
+        #elif dx < dy and Lmy<=dy-dx:
+        #    mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
+        #    mnodes[1] = ((dx+Lmx)**2-3*Lmx**2)/(8*dx*dy) #nudo extremo de muro en x
+        #    mnodes[2] = 0.50 - (2*dx-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
+        #    mnodes[3] = 0.25 - (dx-Lmy)**2/(8*dx*dy) #nudo extremo de muro en y
+        #    mnodes[4] = 0.50 - Lmy/(4*dy) #nudo lateral en y
+        #elif dx < dy and Lmy>dy-dx:
+        #    mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
+        #    mnodes[1] = ((dx+Lmx)**2-3*Lmx**2)/(8*dx*dy) #nudo extremo de muro en x
+        #    mnodes[2] = 0.50 - (2*dx-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
+        #    mnodes[3] = 0.50 - dx/(4*dy) - (dy-Lmy)**2/(8*dx*dy) #nudo extremo de muro en y
+        #    mnodes[4] = 0.25 + dx/(8*dy) - (dy-Lmy)**2/(8*dx*dy) #nudo lateral en y
             
-        elif dx == dy:
-            mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
-            mnodes[1] = 0.25 - (Lmx**2+dy**2-(dx+dy-Lmx)*Lmx)/(8*dx*dy) #nudo extremo de muro en x
-            mnodes[2] = 0.50 - (dx+dy-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
-            mnodes[3] = 0.25 - (Lmy**2+dx**2-(dx+dy-Lmy)*Lmy)/(8*dx*dy) #nudo extremo de muro en y
-            mnodes[4] = 0.50 - (dx+dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
+        #elif dx == dy:
+    mnodes[0] = (Lmx**2+Lmy**2)/(8*dx*dy) #nudo esquina
+    mnodes[1] = 0.25 - (Lmx**2+dy**2-(dx+dy-Lmx)*Lmx)/(8*dx*dy) #nudo extremo de muro en x
+    mnodes[2] = 0.50 - (dx+dy-Lmx)*Lmx/(8*dx*dy) #nudo lateral en x
+    mnodes[3] = 0.25 - (Lmy**2+dx**2-(dx+dy-Lmy)*Lmy)/(8*dx*dy) #nudo extremo de muro en y
+    mnodes[4] = 0.50 - (dx+dy-Lmy)*Lmy/(8*dx*dy) #nudo lateral en y
 
-    elif Lmx>dx/2 and Lmy>dy/2:
-        print('Lm es incompatible, Lm es mayor que la mitad de la longitud del vano (dx o dy)')
-        exit()
+    #elif Lmx>dx/2 and Lmy>dy/2:
+    #    print('Lm es incompatible, Lm es mayor que la mitad de la longitud del vano (dx o dy)')
+    #    exit()
 
     # Creando los nodos y asignando coordenadas
     c = 0
@@ -800,7 +800,7 @@ df6 = pd.DataFrame(columns=['Nmodel','a(m)','b(m)','h(m)','t(m)','Lm(m)','V(kN)'
 df6 = df6.append({'Nmodel':1,'a(m)':a,'b(m)':b,'h(m)':h,'t(m)':t,'Lm(m)':Lmx,'V(kN)':df5['Vx(kN)'][0],'Δmax(‰)': maxdriftx,'Volumen(m3)':Volumen}, ignore_index=True)
 df6 = df6.astype({'Nmodel':int})
 print(df6.round(4))
-df6.to_csv('Modelos_analizados.csv')
+#df6.to_csv('Modelos_analizados.csv')
 
 #lim = 1.1*max(vecX.max(),vecY.max())
 #

@@ -47,8 +47,8 @@ for i in range(nLm) :
     X = np.array(dflm.loc[:,'Δmax(‰)'])
     Y = np.array(dflm.loc[:,'VolConc(m3)'])
 
-    #x[i] = dflm['Ropt'].argmax()
-    #y[i] = dflm['Ropt'].max()
+    #xopt[i] = dflm['Ropt'].argmax()
+    #yopt[i] = dflm['Ropt'].max()
 
 
     plt.plot(X,Y,'.',label='Modelo Lm=%.2fm'%(LM[i]),lw = 0.8)

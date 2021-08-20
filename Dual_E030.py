@@ -786,6 +786,8 @@ vecY = np.array(df5.loc[:,'Δy(‰)'])
 maxdriftx=vecX.max()
 maxdrifty=vecY.max()
 
+print(maxdriftx)
+print(maxdrifty)
 
 #lim = 1.1*max(vecX.max(),vecY.max())
 #

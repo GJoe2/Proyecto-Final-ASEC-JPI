@@ -789,10 +789,18 @@ maxdrifty=vecY.max()
 print(maxdriftx)
 print(maxdrifty)
 
-df6 = pd.DataFrame(columns=['Nmodel','a (m)','b (m)','h (m)','t (m)','Lm (m)','V(kN)','Δ max(‰)'])
-df6 = df6.append({'Nmodel':1,'a (m)':a,'b (m)':b,'h (m)':h,'t (m)':t,'Lm (m)':Lmx,'V(kN)':df5.loc[['Vx(kN)',0]],'Δ max(‰)':df5.loc[['Δx(‰)',0]]}, ignore_index=True)
+VolVx = (b*h*dx*(nx*(ny+1)-4))*nz
+VolVy = (b*h*dy*(ny*(nx+1)-4))*nz
+VolCol = (a*a*dz*(nx+1)*(ny+1)+8-12)*nz
+VolMurosx = t*Lmx*dz*4*nz
+VolMurosy = t*Lmy*dz*4*nz
+Volumen = VolVx+VolVy+VolCol+VolMurosx+VolMurosy
+
+df6 = pd.DataFrame(columns=['Nmodel','a(m)','b(m)','h(m)','t(m)','Lm(m)','V(kN)','Δmax(‰)','Volumen(m3)'])
+df6 = df6.append({'Nmodel':1,'a(m)':a,'b(m)':b,'h(m)':h,'t(m)':t,'Lm(m)':Lmx,'V(kN)':df5['Vx(kN)'][0],'Δmax(‰)': maxdriftx,'Volumen(m3)':Volumen}, ignore_index=True)
 df6 = df6.astype({'Nmodel':int})
 print(df6.round(4))
+df6.to_csv('Modelos_analizados.csv')
 
 #lim = 1.1*max(vecX.max(),vecY.max())
 #

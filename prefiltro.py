@@ -87,28 +87,28 @@ lst1=np.zeros((total,5))
 #        lst1[j+i*nhv,4]=hv[j]
 ################
 cont=0
-for j in range(nac):
-    for k in range(nbv):
-        for ii in range(ntm):
-            for jj in range(nLm):
+for j in range(nLm):
+    for k in range(nac):
+        for ii in range(nbv):
+            for jj in range(ntm):
                 for kk in range(nhv):
-                    lst1[cont]=[ac[j],bv[k],tm[ii],Lm[jj],hv[kk]]
+                    lst1[cont]=[Lm[j],ac[k],bv[ii],tm[jj],hv[kk]]
                     cont=cont+1
 print(total)
 print(cont)                    
 for i in range(total):
     #CONDICIONALES
     #tm tiene como minimo bv
-    if lst1[i,2] >= lst1[i,1]:
+    if lst1[i,3] >= lst1[i,2]:
         #Lm tiene como minimo 4tm
-        if lst1[i,3] >= 4*lst1[i,2]:
+        if lst1[i,0] >= 4*lst1[i,3]:
             #hv tiene como minimo 2bv
-            if lst1[i,4] >= 2*lst1[i,1]:
+            if lst1[i,4] >= 2*lst1[i,2]:
                 
-                b=lst1[i,1]
+                b=lst1[i,2]
                 h=lst1[i,4]
                 Izv = b*h**3/12
-                a=lst1[i,0]
+                a=lst1[i,1]
                 Izc = a**4/12
                 
                 if Izv <= Izc:

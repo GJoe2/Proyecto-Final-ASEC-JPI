@@ -789,9 +789,9 @@ for nmodel in range(nlstf) :
         continue
 
     DDx, ΔDx, VDx, DDy, ΔDy, VDy, df4 = getCombo(E030,MF,modo,Tmodes,3*nz,ni)
-    print('\nANÁLISIS DINÁMICO SIN ESCALAR')
+    #print('\nANÁLISIS DINÁMICO SIN ESCALAR')
     df4 = df4.astype({'Nivel':int})
-    print(df4.round(4))
+    #print(df4.round(4))
 
     # Escalamiento de los resultados del análisis dinámico
     if VDx[0::3][0]<0.80*VSx[0]:
@@ -814,10 +814,10 @@ for nmodel in range(nlstf) :
     texto1 = texto1 + '\nEn la dirección Y, la cortante basal obtenida en el análisis \n\
     dinámico es %.2f kN y el 80%% de la cortante basal del análisis estático es %.2f kN. \n\
     Por lo que %s.'%(VDy[1::3][0]/1000,0.80*VSy[0]/1000,msjy)
-    print(texto1)
+    #print(texto1)
 
     # Se aplican los Factores de Escala
-    print('\nANÁLISIS DINÁMICO FINAL')
+    #print('\nANÁLISIS DINÁMICO FINAL')
     df5 = pd.DataFrame(columns=['Nivel','Vx(kN)','Vy(kN)','Ux(cm)','Uy(cm)','Δx(‰)','Δy(‰)'])
     for i in range(nz):
         Δx = 0.75*Ro*ΔDx[0::3][i]/dz

@@ -663,8 +663,8 @@ for j in range(1,Nmodes+1):
         ni = j
     df3 = df3.append({'Modo':j, 'T(s)':Tmodes[j-1],'FPRx':FPRx,'FPRy':FPRy,'FPRr':FPRr,'SumUx':SUMx,
                     'SumUy':SUMy,'SumRz':SUMr}, ignore_index=True)
-#print(df3.round(5))
-#print('N° mínimo de Modos a considerar:',ni)
+print(df3.round(5))
+print('N° mínimo de Modos a considerar:',ni)
 
 
 #ANÁLISIS DINÁMICO MODAL ESPECTRAL

@@ -51,7 +51,7 @@ for i in range(nLm) :
     #yopt[i] = dflm['Ropt'].max()
 
 
-    plt.plot(X,Y,'.',label='Modelo Lm=%.2fm'%(LM[i]),lw = 0.8)
+    plt.plot(X,Y,'.-',label='Modelo Lm=%.2fm'%(LM[i]),lw = 0.8)
 
 
 
@@ -67,6 +67,6 @@ plt.xlabel('Δmax(‰)')
 plt.ylabel('VolConc(m3)')
 plt.axis([limx,liMx,limy,liMy])
 plt.yticks(np.arange(limy, liMy, (liMy-limy)/10))
-#plt.show()
-plt.savefig('./drift_volu.png')
+plt.show()
+#plt.savefig('./drift_volu.png')
 

@@ -889,10 +889,10 @@ for zz in range(nnz):
         print('OK')
         contador = contador + 1
         
-        df6 = df6.append({'#Niveles':nz,'Nmodel':nmodel+1,'a(m)':a,'b(m)':b,'h(m)':h,'t(m)':t,'Lm(m)':Lmx,'V(kN)':df5['Vx(kN)'][0],'Δmax(‰)': maxdriftx,'VolConc(m3)':Volumen}, ignore_index=True)
+        df6 = df6.append({'#Niveles':'%.0f'%nz,'Nmodel':'%.0f'%(nmodel+1),'a(m)':a,'b(m)':b,'h(m)':h,'t(m)':t,'Lm(m)':Lmx,'V(kN)':df5['Vx(kN)'][0],'Δmax(‰)': maxdriftx,'VolConc(m3)':Volumen}, ignore_index=True)
     
 print('Número de Modelos correctos %.0f:'%(contador))
-df6 = df6.astype({'Nmodel':int})
+
 print(df6.round(4))
 df6.to_csv('Modelos_analizados_v2.csv')
 

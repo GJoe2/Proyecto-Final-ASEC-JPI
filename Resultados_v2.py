@@ -48,6 +48,7 @@ liMx = 1.1*vecX.max()
 limy = 0.9*vecY.min()
 liMy = 1.1*vecY.max()
 
+texts = []
 df7 = pd.DataFrame(columns=['#Niveles','Nmodel_opt','a(m)','b(m)','h(m)','t(m)','Lm(m)','V(kN)','Δmax(‰)','VolConc(m3)','Ropt']) #cuadro de modelos óptimos
 for i in range(nLm) :
     dflmi = df6['Lm(m)'] == LM[i]
@@ -57,19 +58,24 @@ for i in range(nLm) :
     X = np.array(dflm.loc[:,'Ropt'])
     Y = np.array(dflm.loc[:,'#Niveles'])
 
+
     annotations = np.array(dflm.loc[:,'Nmodel'])
 
     plt.plot(X,Y,'.-',label='Modelo Lm=%.2fm'%(LM[i]),lw = 0.8)
     for j, label in enumerate(annotations):
-        plt.annotate('%.0f'%(label),(X[j],Y[j]))
+        texts.append(plt.text(X[j],Y[j],'%.0f'%(label)))
+        #plt.text(X[j],Y[j],'%.0f'%(label))
 
+        #plt.annotate('%.0f'%(label),(X[j],Y[j]))
+        #adjust_text(plt.annotate('%.0f'%(label),(X[j],Y[j])))
+ 
 for i in range(nnz) :
     dfnz = df6['#Niveles'] == Nz[i]
     dfnz = df6[dfnz]
     opt = dfnz['Ropt'].idxmax()
 
     df7 = df7.append({'#Niveles':'%.0f'%Nz[i],'Nmodel_opt':'%.0f'%dfnz.loc[opt,'Nmodel'],'a(m)':dfnz.loc[opt,'a(m)'],'b(m)':dfnz.loc[opt,'b(m)'],'h(m)':dfnz.loc[opt,'h(m)'],'t(m)':dfnz.loc[opt,'t(m)'],'Lm(m)':dfnz.loc[opt,'Lm(m)'],'V(kN)':dfnz.loc[opt,'V(kN)'],'Δmax(‰)':dfnz.loc[opt,'Δmax(‰)'],'VolConc(m3)':dfnz.loc[opt,'VolConc(m3)'],'Ropt':dfnz.loc[opt,'Ropt']}, ignore_index=True)
-
+    
 
 
 
@@ -82,7 +88,8 @@ xx=(vecX.max()-vecX.min())/5
 plt.xticks(np.arange(vecX.min(), vecX.max()+xx, xx))
 plt.yticks(np.arange(vecY.min(), vecY.max()+1, 1))
 
-adjust_text(texts, only_move={'points':'y', 'texts':'y'}, arrowprops=dict(arrowstyle="->", color='r', lw=0.5))
+adjust_text(texts, arrowprops=dict(arrowstyle='-'))
+
 plt.show()
 plt.savefig('./Niveles_Ropt.png')
 

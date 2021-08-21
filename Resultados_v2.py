@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from adjustText import adjust_text
 
 #Leemos los resultados
 df6=pd.read_csv('Modelos_analizados_v2.csv',usecols= ['#Niveles','Nmodel','a(m)','b(m)','h(m)','t(m)','Lm(m)','V(kN)','Δmax(‰)','VolConc(m3)'])
@@ -48,7 +49,7 @@ limy = 0.9*vecY.min()
 liMy = 1.1*vecY.max()
 
 df7 = pd.DataFrame(columns=['#Niveles','Nmodel_opt','a(m)','b(m)','h(m)','t(m)','Lm(m)','V(kN)','Δmax(‰)','VolConc(m3)','Ropt']) #cuadro de modelos óptimos
-for i in range(nnz) :
+for i in range(nLm) :
     dflmi = df6['Lm(m)'] == LM[i]
     dflm = df6[dflmi]
     #print(dflm)
@@ -62,14 +63,17 @@ for i in range(nnz) :
     for j, label in enumerate(annotations):
         plt.annotate('%.0f'%(label),(X[j],Y[j]))
 
+for i in range(nnz) :
     dfnz = df6['#Niveles'] == Nz[i]
     dfnz = df6[dfnz]
     opt = dfnz['Ropt'].idxmax()
 
     df7 = df7.append({'#Niveles':'%.0f'%Nz[i],'Nmodel_opt':'%.0f'%dfnz.loc[opt,'Nmodel'],'a(m)':dfnz.loc[opt,'a(m)'],'b(m)':dfnz.loc[opt,'b(m)'],'h(m)':dfnz.loc[opt,'h(m)'],'t(m)':dfnz.loc[opt,'t(m)'],'Lm(m)':dfnz.loc[opt,'Lm(m)'],'V(kN)':dfnz.loc[opt,'V(kN)'],'Δmax(‰)':dfnz.loc[opt,'Δmax(‰)'],'VolConc(m3)':dfnz.loc[opt,'VolConc(m3)'],'Ropt':dfnz.loc[opt,'Ropt']}, ignore_index=True)
 
+
+
+
 #
-#plt.plot(vecX,vecY,'r.',label='Modelo analizado',lw = 0.8)
 plt.legend()
 plt.xlabel('Ropt = Δmax(‰) / VolConc(m3)')
 plt.ylabel('#Niveles')
@@ -78,8 +82,8 @@ xx=(vecX.max()-vecX.min())/5
 plt.xticks(np.arange(vecX.min(), vecX.max()+xx, xx))
 plt.yticks(np.arange(vecY.min(), vecY.max()+1, 1))
 
-
-#plt.show()
+adjust_text(texts, only_move={'points':'y', 'texts':'y'}, arrowprops=dict(arrowstyle="->", color='r', lw=0.5))
+plt.show()
 plt.savefig('./Niveles_Ropt.png')
 
 print(df7.round(4))

@@ -80,6 +80,6 @@ plt.yticks(np.arange(vecY.min(), vecY.max()+1, 1))
 
 
 #plt.show()
-plt.savefig('./drift_volu.png')
+plt.savefig('./Niveles_Ropt.png')
 
 print(df7.round(4))
